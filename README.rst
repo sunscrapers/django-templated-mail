@@ -19,6 +19,24 @@ use of Django template system to store email content in separate file.
 
 Developed by `SUNSCRAPERS <http://sunscrapers.com/>`_ with passion & patience.
 
+Installation
+=============
+
+Simply install using ``pip``:
+
+.. code-block:: bash
+
+    $ pip install django-templated-mail
+
+And add ``'templated_mail'`` to your ``INSTALLED_APPS``:
+
+.. code-block:: python
+
+    INSTALLED_APPS = [
+    ...
+        'templated_mail',
+    ...
+    ]
 
 Documentation
 =============
