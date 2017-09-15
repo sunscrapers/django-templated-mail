@@ -1,0 +1,96 @@
+{
+    "_meta": {
+        "hash": {
+            "sha256": "605cc713079bb798eae1a733227991c860d95a40e40effbd12057a381726b09a"
+        },
+        "requires": {},
+        "sources": [
+            {
+                "url": "https://pypi.python.org/simple",
+                "verify_ssl": true
+            }
+        ]
+    },
+    "default": {
+        "django": {
+            "version": "==1.11.5"
+        },
+        "pytz": {
+            "version": "==2017.2"
+        }
+    },
+    "develop": {
+        "coverage": {
+            "version": "==4.4.1"
+        },
+        "decorator": {
+            "version": "==4.1.2"
+        },
+        "flake8": {
+            "version": "==3.4.1"
+        },
+        "ipdb": {
+            "version": "==0.10.3"
+        },
+        "ipython": {
+            "version": "==6.1.0"
+        },
+        "ipython-genutils": {
+            "version": "==0.2.0"
+        },
+        "jedi": {
+            "version": "==0.10.2"
+        },
+        "mccabe": {
+            "version": "==0.6.1"
+        },
+        "pexpect": {
+            "version": "==4.2.1"
+        },
+        "pickleshare": {
+            "version": "==0.7.4"
+        },
+        "prompt-toolkit": {
+            "version": "==1.0.15"
+        },
+        "ptyprocess": {
+            "version": "==0.5.2"
+        },
+        "py": {
+            "version": "==1.4.34"
+        },
+        "pycodestyle": {
+            "version": "==2.3.1"
+        },
+        "pyflakes": {
+            "version": "==1.5.0"
+        },
+        "pygments": {
+            "version": "==2.2.0"
+        },
+        "pytest": {
+            "version": "==3.2.2"
+        },
+        "pytest-cov": {
+            "version": "==2.5.1"
+        },
+        "pytest-django": {
+            "version": "==3.1.2"
+        },
+        "setuptools": {
+            "version": "==36.4.0"
+        },
+        "simplegeneric": {
+            "version": "==0.8.1"
+        },
+        "six": {
+            "version": "==1.10.0"
+        },
+        "traitlets": {
+            "version": "==4.3.2"
+        },
+        "wcwidth": {
+            "version": "==0.1.7"
+        }
+    }
+}

@@ -1,0 +1,14 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+
+[packages]
+Django = "*"
+
+[dev-packages]
+ipython = "*"
+ipdb = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-django = "*"
+flake8 = "*"
