@@ -38,8 +38,9 @@ class BaseEmailMessage(mail.EmailMultiAlternatives):
     def render(self):
         context = make_context(self.context, request=self.request)
         template = get_template(self.template_name)
-        for node in template.template.nodelist:
-            self._process_node(node, context)
+        with context.bind_template(template.template):
+            for node in template.template.nodelist:
+                self._process_node(node, context)
         self._attach_body()
 
     def send_to(self, recipients, *args, **kwargs):
@@ -49,7 +50,7 @@ class BaseEmailMessage(mail.EmailMultiAlternatives):
     def _process_node(self, node, context):
         attr = self._node_map.get(getattr(node, 'name', ''))
         if attr is not None:
-            setattr(self, attr, node.render(context))
+            setattr(self, attr, node.render(context).strip())
 
     def _attach_body(self):
         if self.body and self.html:
