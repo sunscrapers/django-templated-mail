@@ -1,6 +1,6 @@
-======
+=====================
 django-templated-mail
-======
+=====================
 
 .. image:: https://img.shields.io/pypi/v/django-templated-mail.svg
   :target: https://pypi.org/project/django-templated-mail
@@ -20,7 +20,7 @@ use of Django template system to store email content in separate file.
 Developed by `SUNSCRAPERS <http://sunscrapers.com/>`_ with passion & patience.
 
 Installation
-=============
+============
 
 Simply install using ``pip``:
 
