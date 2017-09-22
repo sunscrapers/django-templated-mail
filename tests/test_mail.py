@@ -19,7 +19,7 @@ class TestBaseEmailMessage(TestCase):
         request.user = AnonymousUser()
 
         EmailMessage.template_name = 'text_mail.html'
-        EmailMessage(request=request).send_to(recipients=self.recipients)
+        EmailMessage(request=request).send(to=self.recipients)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].recipients(), self.recipients)
         self.assertEqual(mail.outbox[0].subject, 'Text mail subject')
@@ -32,7 +32,7 @@ class TestBaseEmailMessage(TestCase):
         request.user = AnonymousUser()
 
         EmailMessage.template_name = 'html_mail.html'
-        EmailMessage(request=request).send_to(recipients=self.recipients)
+        EmailMessage(request=request).send(to=self.recipients)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].recipients(), self.recipients)
         self.assertEqual(mail.outbox[0].subject, 'HTML mail subject')
@@ -45,7 +45,7 @@ class TestBaseEmailMessage(TestCase):
         request.user = AnonymousUser()
 
         EmailMessage.template_name = 'text_and_html_mail.html'
-        EmailMessage(request=request).send_to(recipients=self.recipients)
+        EmailMessage(request=request).send(to=self.recipients)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].recipients(), self.recipients)
         self.assertEqual(mail.outbox[0].subject, 'Text and HTML mail subject')
@@ -58,9 +58,41 @@ class TestBaseEmailMessage(TestCase):
 
     def test_can_send_mail_with_none_request(self):
         EmailMessage.template_name = 'text_mail.html'
-        EmailMessage(request=None).send_to(recipients=self.recipients)
+        EmailMessage(request=None).send(to=self.recipients)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].recipients(), self.recipients)
+        self.assertEqual(mail.outbox[0].subject, 'Text mail subject')
+        self.assertEqual(mail.outbox[0].body, 'Foobar email content')
+        self.assertEqual(mail.outbox[0].alternatives, [])
+        self.assertEqual(mail.outbox[0].content_subtype, 'plain')
+
+    def test_mail_cc_is_sent_to_valid_cc(self):
+        request = self.factory.get('/')
+        request.user = AnonymousUser()
+
+        cc = ['email@example.tld']
+
+        EmailMessage.template_name = 'text_mail.html'
+        EmailMessage(request=request).send(to=self.recipients, cc=cc)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, self.recipients)
+        self.assertEqual(mail.outbox[0].cc, cc)
+        self.assertEqual(mail.outbox[0].subject, 'Text mail subject')
+        self.assertEqual(mail.outbox[0].body, 'Foobar email content')
+        self.assertEqual(mail.outbox[0].alternatives, [])
+        self.assertEqual(mail.outbox[0].content_subtype, 'plain')
+
+    def test_mail_bcc_is_sent_to_valid_bcc(self):
+        request = self.factory.get('/')
+        request.user = AnonymousUser()
+
+        bcc = ['email@example.tld']
+
+        EmailMessage.template_name = 'text_mail.html'
+        EmailMessage(request=request).send(to=self.recipients, bcc=bcc)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, self.recipients)
+        self.assertEqual(mail.outbox[0].bcc, bcc)
         self.assertEqual(mail.outbox[0].subject, 'Text mail subject')
         self.assertEqual(mail.outbox[0].body, 'Foobar email content')
         self.assertEqual(mail.outbox[0].alternatives, [])
