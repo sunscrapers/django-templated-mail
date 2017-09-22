@@ -43,8 +43,12 @@ class BaseEmailMessage(mail.EmailMultiAlternatives):
                 self._process_node(node, context)
         self._attach_body()
 
-    def send_to(self, recipients, *args, **kwargs):
-        self.to = recipients
+    def send(self, to, cc=None, bcc=None, *args, **kwargs):
+        self.to = to
+        if cc:
+            self.cc = cc
+        if bcc:
+            self.bcc = bcc
         super(BaseEmailMessage, self).send(*args, **kwargs)
 
     def _process_node(self, node, context):
