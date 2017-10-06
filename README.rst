@@ -26,22 +26,14 @@ Simply install using ``pip``:
 
 .. code-block:: bash
 
-    $ pip install django-templated-mail
-
-And add ``'templated_mail'`` to your ``INSTALLED_APPS``:
-
-.. code-block:: python
-
-    INSTALLED_APPS = [
-    ...
-        'templated_mail',
-    ...
-    ]
+    $ pip install -U django-templated-mail
 
 Documentation
 =============
 
-TBD
+Documentation is available to study at
+`http://django-templated-mail.readthedocs.io <http://django-templated-mail.readthedocs.io>`_
+and in ``docs`` directory.
 
 Contributing and development
 ============================
