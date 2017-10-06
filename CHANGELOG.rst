@@ -6,6 +6,17 @@ This document records all notable changes to django-templated-mail.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
 ---------------------
+`1.0.0`_ (2015-10-06)
+---------------------
+
+* Breaking API: Update ``set_context_data`` to ``get_context_data``
+* Add basic documentation
+* Add basic examples
+* Update templates rendering to happen on send
+* Update dependencies
+* Remove Python 3.3 from supported versions
+
+---------------------
 `0.2.0`_ (2015-09-22)
 ---------------------
 

@@ -17,7 +17,7 @@ def get_packages(package):
 
 setup(
     name='django-templated-mail',
-    version='0.2.0',
+    version='1.0.0',
     packages=get_packages('templated_mail'),
     license='MIT',
     author='Sunscrapers',
@@ -28,8 +28,11 @@ setup(
     include_package_data=True,
     url='https://github.com/sunscrapers/django-templated-mail',
     classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Framework :: Django',
+        'Development Status :: 5 - Production/Stable',
+        'Framework :: Django :: 1.8',
+        'Framework :: Django :: 1.10',
+        'Framework :: Django :: 1.11',
+        'Framework :: Django :: 2.0',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
