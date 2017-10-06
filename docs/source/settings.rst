@@ -5,8 +5,8 @@ You may optionally provide following settings:
 
 .. code-block:: python
 
-    'DOMAIN': 'example.com',
-    'SITE_NAME': 'Foo Website',
+    'DOMAIN': 'example.com'
+    'SITE_NAME': 'Foo Website'
 
 DOMAIN
 ------
