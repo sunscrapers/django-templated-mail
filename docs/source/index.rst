@@ -11,6 +11,8 @@ Welcome to django-templated-mail documentation!
 
    getting_started
    settings
+   templates_syntax
+   sample_usage
 
 Indices and tables
 ==================
