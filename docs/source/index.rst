@@ -4,12 +4,13 @@
    contain the root `toctree` directive.
 
 Welcome to django-templated-mail documentation!
-==================================
+===============================================
 
 .. toctree::
    :maxdepth: 2
 
    getting_started
+   settings
 
 Indices and tables
 ==================
