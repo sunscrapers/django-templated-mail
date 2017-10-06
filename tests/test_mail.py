@@ -1,12 +1,11 @@
+from unittest import mock
+
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.sites.shortcuts import get_current_site
 from django.core import mail
 from django.test import RequestFactory, TestCase
 
 from templated_mail.mail import BaseEmailMessage
-
-
-class EmailMessage(BaseEmailMessage):
-    pass
 
 
 class TestBaseEmailMessage(TestCase):
@@ -14,12 +13,71 @@ class TestBaseEmailMessage(TestCase):
         self.factory = RequestFactory()
         self.recipients = ['foo@bar.tld']
 
+    @mock.patch('django.core.handlers.wsgi.WSGIRequest.is_secure')
+    def test_get_context_data_with_insecure_request(self, is_secure_mock):
+        is_secure_mock.return_value = False
+
+        request = self.factory.get('/')
+        request.user = AnonymousUser()
+
+        email_message = BaseEmailMessage(
+            request=request, template_name='text_mail.html'
+        )
+        context = email_message.get_context_data()
+        site = get_current_site(request)
+
+        self.assertEquals(context['domain'], site.domain)
+        self.assertEquals(context['protocol'], 'http')
+        self.assertEquals(context['site_name'], site.name)
+        self.assertEquals(context['user'], request.user)
+
+    @mock.patch('django.core.handlers.wsgi.WSGIRequest.is_secure')
+    def test_get_context_data_with_secure_request(self, is_secure_mock):
+        is_secure_mock.return_value = True
+
+        request = self.factory.get('/')
+        request.user = AnonymousUser()
+
+        email_message = BaseEmailMessage(
+            request=request, template_name='text_mail.html'
+        )
+        context = email_message.get_context_data()
+        site = get_current_site(request)
+
+        self.assertEquals(context['domain'], site.domain)
+        self.assertEquals(context['protocol'], 'https')
+        self.assertEquals(context['site_name'], site.name)
+        self.assertEquals(context['user'], request.user)
+
+    def test_get_context_data_without_request_no_context(self):
+        email_message = BaseEmailMessage(template_name='text_mail.html')
+        context = email_message.get_context_data()
+
+        self.assertEquals(context['domain'], '')
+        self.assertEquals(context['protocol'], 'http')
+        self.assertEquals(context['site_name'], '')
+        self.assertEquals(context['user'], None)
+
+    def test_get_context_data_without_request_user_context(self):
+        user = AnonymousUser()
+        email_message = BaseEmailMessage(
+            context={'user': user}, template_name='text_mail.html'
+        )
+        context = email_message.get_context_data()
+
+        self.assertEquals(context['domain'], '')
+        self.assertEquals(context['protocol'], 'http')
+        self.assertEquals(context['site_name'], '')
+        self.assertEquals(context['user'], user)
+
     def test_text_mail_contains_valid_data(self):
         request = self.factory.get('/')
         request.user = AnonymousUser()
 
-        EmailMessage.template_name = 'text_mail.html'
-        EmailMessage(request=request).send(to=self.recipients)
+        BaseEmailMessage(
+            request=request, template_name='text_mail.html'
+        ).send(to=self.recipients)
+
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].recipients(), self.recipients)
         self.assertEqual(mail.outbox[0].subject, 'Text mail subject')
@@ -31,8 +89,10 @@ class TestBaseEmailMessage(TestCase):
         request = self.factory.get('/')
         request.user = AnonymousUser()
 
-        EmailMessage.template_name = 'html_mail.html'
-        EmailMessage(request=request).send(to=self.recipients)
+        BaseEmailMessage(
+            request=request, template_name='html_mail.html'
+        ).send(to=self.recipients)
+
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].recipients(), self.recipients)
         self.assertEqual(mail.outbox[0].subject, 'HTML mail subject')
@@ -44,8 +104,10 @@ class TestBaseEmailMessage(TestCase):
         request = self.factory.get('/')
         request.user = AnonymousUser()
 
-        EmailMessage.template_name = 'text_and_html_mail.html'
-        EmailMessage(request=request).send(to=self.recipients)
+        BaseEmailMessage(
+            request=request, template_name='text_and_html_mail.html'
+        ).send(to=self.recipients)
+
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].recipients(), self.recipients)
         self.assertEqual(mail.outbox[0].subject, 'Text and HTML mail subject')
@@ -57,8 +119,10 @@ class TestBaseEmailMessage(TestCase):
         self.assertEqual(mail.outbox[0].content_subtype, 'plain')
 
     def test_can_send_mail_with_none_request(self):
-        EmailMessage.template_name = 'text_mail.html'
-        EmailMessage(request=None).send(to=self.recipients)
+        BaseEmailMessage(
+            request=None, template_name='text_mail.html'
+        ).send(to=self.recipients)
+
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].recipients(), self.recipients)
         self.assertEqual(mail.outbox[0].subject, 'Text mail subject')
@@ -72,8 +136,10 @@ class TestBaseEmailMessage(TestCase):
 
         cc = ['email@example.tld']
 
-        EmailMessage.template_name = 'text_mail.html'
-        EmailMessage(request=request).send(to=self.recipients, cc=cc)
+        BaseEmailMessage(
+            request=request, template_name='text_mail.html'
+        ).send(to=self.recipients, cc=cc)
+
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, self.recipients)
         self.assertEqual(mail.outbox[0].cc, cc)
@@ -88,8 +154,10 @@ class TestBaseEmailMessage(TestCase):
 
         bcc = ['email@example.tld']
 
-        EmailMessage.template_name = 'text_mail.html'
-        EmailMessage(request=request).send(to=self.recipients, bcc=bcc)
+        BaseEmailMessage(
+            request=request, template_name='text_mail.html'
+        ).send(to=self.recipients, bcc=bcc)
+
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, self.recipients)
         self.assertEqual(mail.outbox[0].bcc, bcc)

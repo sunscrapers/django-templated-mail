@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from django.contrib.sites.shortcuts import get_current_site
 from django.core import mail
 from django.template.context import make_context
@@ -14,29 +16,49 @@ class BaseEmailMessage(mail.EmailMultiAlternatives):
     }
     template_name = None
 
-    def __init__(self, request, context=None, *args, **kwargs):
+    def __init__(self, request=None, context=None, template_name=None,
+                 *args, **kwargs):
         super(BaseEmailMessage, self).__init__(*args, **kwargs)
 
         self.request = request
         self.context = {} if context is None else context
         self.html = None
 
-        if request is not None:
-            self.set_context_data()
-        self.render()
+        if template_name is not None:
+            self.template_name = template_name
 
-    def set_context_data(self):
-        site = get_current_site(self.request)
-        self.context.update({
-            'domain': getattr(settings, 'DOMAIN', '') or site.domain,
-            'protocol': self.context.get('protocol') or (
-                'https' if self.request.is_secure() else 'http'),
-            'site_name': getattr(settings, 'SITE_NAME', '') or site.name,
-            'user': self.context.get('user') or self.request.user,
+    def get_context_data(self):
+        context = deepcopy(self.context)
+        if self.request:
+            site = get_current_site(self.request)
+            domain = context.get('domain') or (
+                getattr(settings, 'DOMAIN', '') or site.domain
+            )
+            protocol = context.get('protocol') or (
+                'https' if self.request.is_secure() else 'http'
+            )
+            site_name = context.get('site_name') or (
+                getattr(settings, 'SITE_NAME', '') or site.name
+            )
+            user = context.get('user') or self.request.user
+        else:
+            domain = context.get('domain') or getattr(settings, 'DOMAIN', '')
+            protocol = context.get('protocol') or 'http'
+            site_name = context.get('site_name') or getattr(
+                settings, 'SITE_NAME', ''
+            )
+            user = context.get('user')
+
+        context.update({
+            'domain': domain,
+            'protocol': protocol,
+            'site_name': site_name,
+            'user': user
         })
+        return context
 
     def render(self):
-        context = make_context(self.context, request=self.request)
+        context = make_context(self.get_context_data(), request=self.request)
         template = get_template(self.template_name)
         with context.bind_template(template.template):
             for node in template.template.nodelist:
@@ -44,6 +66,7 @@ class BaseEmailMessage(mail.EmailMultiAlternatives):
         self._attach_body()
 
     def send(self, to, cc=None, bcc=None, *args, **kwargs):
+        self.render()
         self.to = to
         if cc:
             self.cc = cc
