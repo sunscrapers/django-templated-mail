@@ -1,4 +1,7 @@
-from unittest import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sites.shortcuts import get_current_site
