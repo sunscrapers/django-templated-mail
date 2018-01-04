@@ -168,3 +168,21 @@ class TestBaseEmailMessage(TestCase):
         self.assertEqual(mail.outbox[0].body, 'Foobar email content')
         self.assertEqual(mail.outbox[0].alternatives, [])
         self.assertEqual(mail.outbox[0].content_subtype, 'plain')
+
+    def test_mail_reply_to_is_sent_with_valid_reply_to(self):
+        request = self.factory.get('/')
+        request.user = AnonymousUser()
+
+        reply_to = ['email@example.tld']
+
+        BaseEmailMessage(
+            request=request, template_name='text_mail.html'
+        ).send(to=self.recipients, reply_to=reply_to)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, self.recipients)
+        self.assertEqual(mail.outbox[0].reply_to, reply_to)
+        self.assertEqual(mail.outbox[0].subject, 'Text mail subject')
+        self.assertEqual(mail.outbox[0].body, 'Foobar email content')
+        self.assertEqual(mail.outbox[0].alternatives, [])
+        self.assertEqual(mail.outbox[0].content_subtype, 'plain')
