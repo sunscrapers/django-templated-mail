@@ -190,7 +190,7 @@ class TestBaseEmailMessage(TestCase):
         request = self.factory.get('/')
         request.user = AnonymousUser()
 
-        from_email = ['email@example.tld']
+        from_email = '<Example - email@example.tld>'
 
         BaseEmailMessage(
             request=request, template_name='text_mail.html'

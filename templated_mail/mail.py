@@ -71,7 +71,7 @@ class BaseEmailMessage(mail.EmailMultiAlternatives):
         self.cc = kwargs.pop('cc', [])
         self.bcc = kwargs.pop('bcc', [])
         self.reply_to = kwargs.pop('reply_to', [])
-        self.from_email = kwargs.pop('from_email', [])
+        self.from_email = kwargs.pop('from_email', '')
 
         super(BaseEmailMessage, self).send(*args, **kwargs)
 
