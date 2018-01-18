@@ -1,11 +1,10 @@
 from copy import deepcopy
 
+from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.core import mail
 from django.template.context import make_context
 from django.template.loader import get_template
-
-from django.conf import settings
 
 
 class BaseEmailMessage(mail.EmailMultiAlternatives):
@@ -72,6 +71,7 @@ class BaseEmailMessage(mail.EmailMultiAlternatives):
         self.cc = kwargs.pop('cc', [])
         self.bcc = kwargs.pop('bcc', [])
         self.reply_to = kwargs.pop('reply_to', [])
+        self.from_email = kwargs.pop('from_email', '')
 
         super(BaseEmailMessage, self).send(*args, **kwargs)
 
