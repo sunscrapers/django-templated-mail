@@ -27,7 +27,7 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
 
     def get_context_data(self, **kwargs):
         ctx = super(BaseEmailMessage, self).get_context_data(**kwargs)
-        context = dict(ctx.items() | self.context.items())
+        context = dict(ctx, **self.context)
         if self.request:
             site = get_current_site(self.request)
             domain = context.get('domain') or (
