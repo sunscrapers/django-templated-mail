@@ -9,6 +9,8 @@ from django.core import mail
 from django.test import RequestFactory, TestCase
 from templated_mail.mail import BaseEmailMessage
 
+from .helpers import MockMail
+
 
 class TestBaseEmailMessage(TestCase):
     def setUp(self):
@@ -203,3 +205,13 @@ class TestBaseEmailMessage(TestCase):
         self.assertEqual(mail.outbox[0].body, 'Foobar email content')
         self.assertEqual(mail.outbox[0].alternatives, [])
         self.assertEqual(mail.outbox[0].content_subtype, 'plain')
+
+    def test_extending_mail_with_context_mixin(self):
+        email_message = MockMail(
+            template_name='text_mail.html', context={'foo': 'bar'}
+        )
+
+        context = email_message.get_context_data()
+
+        self.assertEquals(context['foo'], 'bar')
+        self.assertEquals(context['thing'], 42)
