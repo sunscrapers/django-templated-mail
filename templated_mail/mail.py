@@ -3,9 +3,10 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core import mail
 from django.template.context import make_context
 from django.template.loader import get_template
+from django.views.generic.base import ContextMixin
 
 
-class BaseEmailMessage(mail.EmailMultiAlternatives):
+class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
     _node_map = {
         'subject': 'subject',
         'text_body': 'body',
@@ -24,9 +25,9 @@ class BaseEmailMessage(mail.EmailMultiAlternatives):
         if template_name is not None:
             self.template_name = template_name
 
-    def get_context_data(self):
-        _context = super(BaseEmailMessage, self).get_context_data(**kwargs)
-        context = dict(_context.items() + self.context.items())
+    def get_context_data(self, **kwargs):
+        ctx = super(BaseEmailMessage, self).get_context_data(**kwargs)
+        context = dict(ctx.items() | self.context.items())
         if self.request:
             site = get_current_site(self.request)
             domain = context.get('domain') or (
