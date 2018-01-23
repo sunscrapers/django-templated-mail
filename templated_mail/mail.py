@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.core import mail
@@ -27,7 +25,8 @@ class BaseEmailMessage(mail.EmailMultiAlternatives):
             self.template_name = template_name
 
     def get_context_data(self):
-        context = deepcopy(self.context)
+        _context = super(BaseEmailMessage, self).get_context_data(**kwargs)
+        context = dict(_context.items() + self.context.items())
         if self.request:
             site = get_current_site(self.request)
             domain = context.get('domain') or (
