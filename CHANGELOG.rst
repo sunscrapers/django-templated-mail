@@ -53,3 +53,5 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 .. _0.1.0: https://github.com/sunscrapers/django-templated-mail/compare/3bc71b3...0.1.0
 .. _0.1.1: https://github.com/sunscrapers/django-templated-mail/compare/0.1.0...0.1.1
 .. _0.2.0: https://github.com/sunscrapers/django-templated-mail/compare/0.1.1...0.2.0
+.. _1.0.0: https://github.com/sunscrapers/django-templated-mail/compare/0.2.0...1.0.0
+.. _1.1.0: https://github.com/sunscrapers/django-templated-mail/compare/1.0.0...1.1.0
