@@ -6,7 +6,7 @@ except ImportError:
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sites.shortcuts import get_current_site
 from django.core import mail
-from django.test import RequestFactory, TestCase
+from django.test import override_settings, RequestFactory, TestCase
 from templated_mail.mail import BaseEmailMessage
 
 from .helpers import MockMail
@@ -205,6 +205,16 @@ class TestBaseEmailMessage(TestCase):
         self.assertEqual(mail.outbox[0].body, 'Foobar email content')
         self.assertEqual(mail.outbox[0].alternatives, [])
         self.assertEqual(mail.outbox[0].content_subtype, 'plain')
+
+    @override_settings(DEFAULT_FROM_EMAIL='default@example.tld')
+    def test_mail_without_from_email_is_sent_with_valid_from_email(self):
+        BaseEmailMessage(
+            request=None, template_name='text_mail.html'
+        ).send(to=self.recipients)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, self.recipients)
+        self.assertEqual(mail.outbox[0].from_email, 'default@example.tld')
 
     def test_extending_mail_with_context_mixin(self):
         email_message = MockMail(

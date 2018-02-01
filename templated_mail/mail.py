@@ -71,7 +71,9 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
         self.cc = kwargs.pop('cc', [])
         self.bcc = kwargs.pop('bcc', [])
         self.reply_to = kwargs.pop('reply_to', [])
-        self.from_email = kwargs.pop('from_email', None)
+        self.from_email = kwargs.pop(
+            'from_email', settings.DEFAULT_FROM_EMAIL
+        )
 
         super(BaseEmailMessage, self).send(*args, **kwargs)
 
