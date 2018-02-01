@@ -17,7 +17,7 @@ def get_packages(package):
 
 setup(
     name='django-templated-mail',
-    version='1.1.0',
+    version='1.1.1',
     packages=get_packages('templated_mail'),
     license='MIT',
     author='Sunscrapers',

@@ -6,6 +6,13 @@ This document records all notable changes to django-templated-mail.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
 ---------------------
+`1.1.1`_ (2017-02-01)
+---------------------
+
+* Bugfix: ``from_email`` does not fallback to ``DEFAULT_FROM_EMAIL``
+
+
+---------------------
 `1.1.0`_ (2017-01-29)
 ---------------------
 
