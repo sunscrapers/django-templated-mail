@@ -5,8 +5,8 @@ You may optionally provide following settings:
 
 .. code-block:: python
 
-    'DOMAIN': 'example.com'
-    'SITE_NAME': 'Foo Website'
+    'TEMPLATED_MAIL_DOMAIN': 'example.com'
+    'TEMPLATED_MAIL_SITE_NAME': 'Foo Website'
 
 DOMAIN
 ------

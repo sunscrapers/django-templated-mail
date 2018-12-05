@@ -225,3 +225,15 @@ class TestBaseEmailMessage(TestCase):
 
         self.assertEquals(context['foo'], 'bar')
         self.assertEquals(context['thing'], 42)
+
+    def test_default_data_is_fetched_from_settings(self):
+        extra_settings = {
+            'TEMPLATED_MAIL_DOMAIN': 'domain.example.com',
+            'TEMPLATED_MAIL_SITE_NAME': 'My Site',
+        }
+        with self.settings(**extra_settings):
+            email_message = BaseEmailMessage()
+            context = email_message.get_context_data()
+
+        self.assertEquals(context['domain'], 'domain.example.com')
+        self.assertEquals(context['site_name'], 'My Site')
