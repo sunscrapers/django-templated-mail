@@ -225,3 +225,19 @@ class TestBaseEmailMessage(TestCase):
 
         self.assertEquals(context['foo'], 'bar')
         self.assertEquals(context['thing'], 42)
+
+    def test_extending_mail_template(self):
+        email_message = BaseEmailMessage(template_name='extends.html')
+        email_message.render()
+
+        self.assertEquals(email_message.subject, 'Text and HTML mail subject')
+        self.assertEquals(email_message.body, 'Foobar email content')
+        self.assertEquals(email_message.html, 'Some extended HTML body')
+
+    def text_nested_extending_mail_template(self):
+        email_message = BaseEmailMessage(template_name='nested_extends.html')
+        email_message.render()
+
+        self.assertEquals(email_message.subject, 'Text and HTML mail subject')
+        self.assertEquals(email_message.body, 'Some extended text body')
+        self.assertEquals(email_message.html, 'Some extended HTML body')
