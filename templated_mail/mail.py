@@ -6,6 +6,10 @@ from django.template.loader import get_template
 from django.views.generic.base import ContextMixin
 
 
+SETTINGS_DOMAIN = 'TEMPLATED_MAIL_DOMAIN'
+SETTINGS_SITE_NAME = 'TEMPLATED_MAIL_SITE_NAME'
+
+
 class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
     _node_map = {
         'subject': 'subject',
@@ -31,20 +35,22 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
         if self.request:
             site = get_current_site(self.request)
             domain = context.get('domain') or (
-                getattr(settings, 'DOMAIN', '') or site.domain
+                getattr(settings, SETTINGS_DOMAIN, '') or site.domain
             )
             protocol = context.get('protocol') or (
                 'https' if self.request.is_secure() else 'http'
             )
             site_name = context.get('site_name') or (
-                getattr(settings, 'SITE_NAME', '') or site.name
+                getattr(settings, SETTINGS_SITE_NAME, '') or site.name
             )
             user = context.get('user') or self.request.user
         else:
-            domain = context.get('domain') or getattr(settings, 'DOMAIN', '')
+            domain = context.get('domain') or getattr(
+                settings, SETTINGS_DOMAIN, ''
+            )
             protocol = context.get('protocol') or 'http'
             site_name = context.get('site_name') or getattr(
-                settings, 'SITE_NAME', ''
+                settings, SETTINGS_SITE_NAME, ''
             )
             user = context.get('user')
 
