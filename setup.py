@@ -29,9 +29,9 @@ setup(
     url='https://github.com/sunscrapers/django-templated-mail',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
-        'Framework :: Django :: 1.8',
         'Framework :: Django :: 1.11',
         'Framework :: Django :: 2.0',
+        'Framework :: Django :: 2.1',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
