@@ -3,6 +3,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core import mail
 from django.template.context import make_context
 from django.template.loader import get_template
+from django.template.loader_tags import BlockNode, ExtendsNode
 from django.views.generic.base import ContextMixin
 
 
@@ -60,8 +61,9 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
         context = make_context(self.get_context_data(), request=self.request)
         template = get_template(self.template_name)
         with context.bind_template(template.template):
-            for node in template.template.nodelist:
-                self._process_node(node, context)
+            blocks = self._get_blocks(template.template.nodelist, context)
+            for block_node in blocks.values():
+                self._process_block(block_node, context)
         self._attach_body()
 
     def send(self, to, *args, **kwargs):
@@ -77,10 +79,21 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
 
         super(BaseEmailMessage, self).send(*args, **kwargs)
 
-    def _process_node(self, node, context):
-        attr = self._node_map.get(getattr(node, 'name', ''))
+    def _process_block(self, block_node, context):
+        attr = self._node_map.get(block_node.name)
         if attr is not None:
-            setattr(self, attr, node.render(context).strip())
+            setattr(self, attr, block_node.render(context).strip())
+
+    def _get_blocks(self, nodelist, context):
+        blocks = {}
+        for node in nodelist:
+            if isinstance(node, ExtendsNode):
+                parent = node.get_parent(context)
+                blocks.update(self._get_blocks(parent.nodelist, context))
+        blocks.update({
+            node.name: node for node in nodelist.get_nodes_by_type(BlockNode)
+        })
+        return blocks
 
     def _attach_body(self):
         if self.body and self.html:
