@@ -104,6 +104,18 @@ class TestBaseEmailMessage(TestCase):
         self.assertEqual(mail.outbox[0].alternatives, [])
         self.assertEqual(mail.outbox[0].content_subtype, 'html')
 
+    @override_settings(TEMPLATE_ATTRIBUTE='django_template_name')
+    def test_alternative_attribute(self):
+        request = self.factory.get('/')
+        request.user = AnonymousUser()
+        message = BaseEmailMessage(
+            request=request, template_name='html_mail.html'
+        )
+        self.assertIsNone(getattr(message, 'template_name', None))
+        self.assertEqual(message.django_template_name, 'html_mail.html')
+        message.send(to=self.recipients)
+        self.assertEqual(mail.outbox[0].body, '<p>Foobar email content</p>')
+
     def test_text_and_html_mail_contains_valid_data(self):
         request = self.factory.get('/')
         request.user = AnonymousUser()

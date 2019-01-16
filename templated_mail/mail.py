@@ -7,13 +7,14 @@ from django.template.loader_tags import BlockNode, ExtendsNode
 from django.views.generic.base import ContextMixin
 
 
+
+
 class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
     _node_map = {
         'subject': 'subject',
         'text_body': 'body',
         'html_body': 'html',
     }
-    template_name = None
 
     def __init__(self, request=None, context=None, template_name=None,
                  *args, **kwargs):
@@ -22,9 +23,13 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
         self.request = request
         self.context = {} if context is None else context
         self.html = None
+        self.template_name_attribute = getattr(
+            settings, 'TEMPLATE_ATTRIBUTE', 'template_name',
+        )
+
 
         if template_name is not None:
-            self.template_name = template_name
+            setattr(self, self.template_name_attribute, template_name)
 
     def get_context_data(self, **kwargs):
         ctx = super(BaseEmailMessage, self).get_context_data(**kwargs)
@@ -59,7 +64,8 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
 
     def render(self):
         context = make_context(self.get_context_data(), request=self.request)
-        template = get_template(self.template_name)
+        template_name = getattr(self, self.template_name_attribute)
+        template = get_template(template_name)
         with context.bind_template(template.template):
             blocks = self._get_blocks(template.template.nodelist, context)
             for block_node in blocks.values():
