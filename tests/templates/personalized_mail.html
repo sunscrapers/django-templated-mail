@@ -1,0 +1,6 @@
+{% load i18n %}
+{% block subject %}Personalized email{% endblock %}
+
+{% block text_body %}{% trans 'Hello' %} {{ user.first_name }}!{% endblock %}
+{% block html_body %}<p>{% trans 'Hello' %} {{ user.first_name }}!</p>{% endblock %}
+
