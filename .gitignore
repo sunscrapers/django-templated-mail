@@ -7,6 +7,7 @@
 # Distribution
 build/
 dist/
+django_templated_mail.egg-info
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -37,3 +38,6 @@ ENV/
 
 # logs
 *.log
+
+# vim
+*.swp

@@ -13,6 +13,7 @@ Welcome to django-templated-mail documentation!
    settings
    templates_syntax
    sample_usage
+   personalization
 
 Indices and tables
 ==================

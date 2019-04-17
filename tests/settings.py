@@ -19,6 +19,10 @@ INSTALLED_APPS = [
     'tests',
 ]
 
+TEMPLATED_MAIL = {
+    'locale_field': 'locale',
+}
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -44,6 +48,8 @@ TEMPLATES = [
         },
     },
 ]
+
+AUTH_USER_MODEL = 'tests.User'
 
 DATABASES = {
     'default': {

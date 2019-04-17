@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 try:
     from unittest import mock
 except ImportError:
@@ -10,6 +12,7 @@ from django.test import override_settings, RequestFactory, TestCase
 from templated_mail.mail import BaseEmailMessage
 
 from .helpers import MockMail
+from .models import User
 
 
 class TestBaseEmailMessage(TestCase):
@@ -241,3 +244,60 @@ class TestBaseEmailMessage(TestCase):
         self.assertEquals(email_message.subject, 'Text and HTML mail subject')
         self.assertEquals(email_message.body, 'Some extended text body')
         self.assertEquals(email_message.html, 'Some extended HTML body')
+
+    def test_mail_can_be_sent_with_user_as_argument(self):
+        email_message = BaseEmailMessage(template_name='text_mail.html')
+        user = User.objects.get(username='johnny')
+        email_message.send(to=[user])
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertListEqual(mail.outbox[0].to, [user.email])
+
+    def test_single_mail_to_multiple_users(self):
+        email_message = BaseEmailMessage(template_name='text_mail.html')
+        user1 = User.objects.get(username='johnny')
+        user2 = User.objects.get(username='janek')
+        email_message.send(to=[user1, user2], single_email=True)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertListEqual(mail.outbox[0].to, [user1.email, user2.email])
+
+    def test_separate_mails_to_multiple_users(self):
+        email_message = BaseEmailMessage(template_name='text_mail.html')
+        user1 = User.objects.get(username='johnny')
+        user2 = User.objects.get(username='janek')
+        email_message.send(to=[user1, user2], single_email=False)
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertListEqual(mail.outbox[0].to, [user1.email])
+        self.assertListEqual(mail.outbox[1].to, [user2.email])
+
+    def test_separate_mails_to_multiple_addresses(self):
+        email_message = BaseEmailMessage(template_name='text_mail.html')
+        user1 = User.objects.get(username='johnny')
+        user2 = User.objects.get(username='janek')
+        email_message.send(to=[user1.email, user2.email], single_email=False)
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertListEqual(mail.outbox[0].to, [user1.email])
+        self.assertListEqual(mail.outbox[1].to, [user2.email])
+
+    def test_single_mail_to_invalid_address(self):
+        email_message = BaseEmailMessage(template_name='text_mail.html')
+        user1 = User.objects.get(username='johnny')
+        user2 = User.objects.get(username='janek')
+        with self.assertRaises(TypeError):
+            email_message.send(to=[user1, user2, 1], single_email=True)
+
+    def test_separate_mails_to_invalid_address(self):
+        email_message = BaseEmailMessage(template_name='text_mail.html')
+        user1 = User.objects.get(username='johnny')
+        user2 = User.objects.get(username='janek')
+        with self.assertRaises(TypeError):
+            email_message.send(to=[user1, user2, 1], single_email=False)
+
+    def test_personalised_separate_emails(self):
+        email_message = BaseEmailMessage(
+            template_name='personalized_mail.html'
+        )
+        user1 = User.objects.get(username='janek')
+        user2 = User.objects.get(username='giorgi')
+        email_message.send(to=[user1, user2], single_email=False)
+        self.assertIn('Cześć Jan!', mail.outbox[0].body)
+        self.assertIn('გამარჯობა გიორგი!', mail.outbox[1].body)

@@ -5,8 +5,12 @@ You may optionally provide following settings:
 
 .. code-block:: python
 
-    'DOMAIN': 'example.com'
-    'SITE_NAME': 'Foo Website'
+'TEMPLATED_MAIL': {
+    'DOMAIN': 'example.com',
+    'SITE_NAME': 'Foo Website',
+    LOCALE_FIELD: 'locale',
+}
+
 
 DOMAIN
 ------
@@ -25,4 +29,12 @@ Used in email template context. Usually it will contain the desired title of you
 app. If not provided the current site's name will be used.
 
 
-**Default**: ``False``
+**Required**: ``False``
+
+LOCALE_FIELD
+------------------
+
+The field on a user model that contains the locale name to be used. If not
+specified, the per-user i18n is disabled.
+
+**Required**: ``False``
