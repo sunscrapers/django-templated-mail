@@ -26,6 +26,8 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
         if template_name is not None:
             self.template_name = template_name
 
+        self.render()
+
     def get_context_data(self, **kwargs):
         ctx = super(BaseEmailMessage, self).get_context_data(**kwargs)
         context = dict(ctx, **self.context)
@@ -66,10 +68,12 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
                 self._process_block(block_node, context)
         self._attach_body()
 
-    def send(self, to, *args, **kwargs):
-        self.render()
+    def send(self, *args, **kwargs):
+        if len(args) > 0:
+            self.to = args[0]
+        elif "to" in kwargs:
+            self.to = kwargs.pop('to')
 
-        self.to = to
         self.cc = kwargs.pop('cc', [])
         self.bcc = kwargs.pop('bcc', [])
         self.reply_to = kwargs.pop('reply_to', [])
@@ -77,6 +81,8 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
             'from_email', settings.DEFAULT_FROM_EMAIL
         )
 
+        if hasattr(self, "request"):
+            del self.request
         super(BaseEmailMessage, self).send(*args, **kwargs)
 
     def _process_block(self, block_node, context):
