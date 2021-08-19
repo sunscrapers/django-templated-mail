@@ -1,33 +1,25 @@
 language: python
 python:
-  - "2.7"
-  - "3.4"
-  - "3.5"
   - "3.6"
-  - "3.7-dev"
+  - "3.7"
+  - "3.8"
+  - "3.9"
 
 env:
-  - DJANGO=1.11
-  - DJANGO=2.0
-  - DJANGO=2.1
-  - DJANGO=master
+  - DJANGO=2.2
+  - DJANGO=3.1
+  - DJANGO=3.2
+  - DJANGO=main
 
 matrix:
   fast_finish: true
   exclude:
-    - python: "2.7"
-      env: DJANGO=2.0
-    - python: "2.7"
-      env: DJANGO=2.1
-    - python: "2.7"
-      env: DJANGO=master
-    - python: "3.4"
-      env: DJANGO=2.1
-    - python: "3.4"
-      env: DJANGO=master
+    - python: "3.6"
+      env: DJANGO=main
+    - python: "3.7"
+      env: DJANGO=main
   allow_failures:
-    - env: DJANGO=master
-    - python: "3.7-dev"
+    - env: DJANGO=main
 
 install:
   - travis_retry pip install -U tox-travis
