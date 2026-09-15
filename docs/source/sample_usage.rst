@@ -24,7 +24,7 @@ which returns context used during template rendering.
 
     class MyEmailMessage(BaseEmailMessage):
         def get_context_data(self):
-            context = super(MyEmailMessage, self).get_context_data()
+            context = super().get_context_data()
             context['foo'] = 'bar'
             return context
 

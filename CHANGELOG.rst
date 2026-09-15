@@ -6,7 +6,27 @@ This document records all notable changes to django-templated-mail.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
 ---------------------
-`1.1.1`_ (2017-02-01)
+`2.0.0`_ (unreleased)
+---------------------
+
+* **breaking:** drop support for Python 2.7 and 3.4-3.8; Python 3.9-3.14 are supported
+* **breaking:** drop support for Django 1.11-3.1; Django 3.2-6.1 are supported
+* **breaking:** ``BaseEmailMessage.send`` clears ``request`` on the instance once the
+  templates have been rendered, so a sent message can be deep-copied and pickled
+  (required by the locmem email backend since Django 5.1 and by task queues)
+  https://github.com/sunscrapers/djoser/issues/842
+* add optional ``PROTOCOL`` setting, overriding the protocol derived from the
+  request in the same way ``DOMAIN`` and ``SITE_NAME`` do
+  https://github.com/sunscrapers/django-templated-mail/issues/31
+* move packaging to ``pyproject.toml`` (hatchling) and ``uv``; drop ``setup.py``,
+  ``Pipfile``, ``tox`` and Travis CI
+* add GitHub Actions workflows for tests (Python x Django matrix), code quality
+  (pre-commit with black, ruff, pyupgrade, docformatter) and tag-driven PyPI
+  releases, mirroring djoser
+* fix the nested template inheritance test that was never collected
+
+---------------------
+`1.1.1`_ (2018-02-01)
 ---------------------
 
 * Bugfix: ``from_email`` does not fallback to ``DEFAULT_FROM_EMAIL``
@@ -62,3 +82,5 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 .. _0.2.0: https://github.com/sunscrapers/django-templated-mail/compare/0.1.1...0.2.0
 .. _1.0.0: https://github.com/sunscrapers/django-templated-mail/compare/0.2.0...1.0.0
 .. _1.1.0: https://github.com/sunscrapers/django-templated-mail/compare/1.0.0...1.1.0
+.. _1.1.1: https://github.com/sunscrapers/django-templated-mail/compare/1.1.0...1.1.1
+.. _2.0.0: https://github.com/sunscrapers/django-templated-mail/compare/1.1.1...2.0.0
