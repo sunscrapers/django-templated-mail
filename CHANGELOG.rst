@@ -9,12 +9,14 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 `2.0.0`_ (unreleased)
 ---------------------
 
-* **breaking:** drop support for Python 2.7 and 3.4-3.8; Python 3.9-3.14 are supported
+* **breaking:** drop support for Python 2.7 and 3.4-3.7; Python 3.9-3.14 are supported
 * **breaking:** drop support for Django 1.11-3.1; Django 3.2-6.1 are supported
 * **breaking:** ``BaseEmailMessage.send`` clears ``request`` on the instance once the
   templates have been rendered, so a sent message can be deep-copied and pickled
   (required by the locmem email backend since Django 5.1 and by task queues)
   https://github.com/sunscrapers/djoser/issues/842
+* ``{{ block.super }}`` now works in email templates that extend a base template;
+  previously it raised ``TemplateSyntaxError``
 * add optional ``PROTOCOL`` setting, overriding the protocol derived from the
   request in the same way ``DOMAIN`` and ``SITE_NAME`` do
   https://github.com/sunscrapers/django-templated-mail/issues/31
@@ -42,7 +44,7 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
 
 ---------------------
-`1.1.0`_ (2017-01-29)
+`1.1.0`_ (2018-01-29)
 ---------------------
 
 * Add support for ``reply_to`` parameter in ``BaseEmailMessage.send`` method

@@ -61,8 +61,8 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
-# Django >= 6.1 warns when no mailer is configured; the test runner swaps
-# every alias for the locmem backend, and older versions ignore the setting.
+# Django >= 6.1 only swaps mail aliases for the locmem backend during tests
+# when MAILERS is defined; older versions ignore the setting.
 MAILERS = {
     "default": {"BACKEND": "django.core.mail.backends.locmem.EmailBackend"},
 }

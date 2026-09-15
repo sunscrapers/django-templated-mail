@@ -17,7 +17,8 @@ DOMAIN
 
 Used in email template context. In most cases it is used to simplify building URLs,
 when frontend and backend are hosted under different address'. If not provided
-the current site's domain will be used.
+the current site's domain is used when the message was given a ``request``, and
+an empty string otherwise.
 
 
 **Required**: ``False``
@@ -26,7 +27,8 @@ SITE_NAME
 ---------
 
 Used in email template context. Usually it will contain the desired title of your
-app. If not provided the current site's name will be used.
+app. If not provided the current site's name is used when the message was given a
+``request``, and an empty string otherwise.
 
 
 **Required**: ``False``

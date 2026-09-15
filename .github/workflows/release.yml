@@ -65,6 +65,10 @@ jobs:
               found { print }
             ' CHANGELOG.rst
           }
+          if grep -q "^\`$VERSION\`_ (unreleased)" CHANGELOG.rst; then
+            echo "CHANGELOG.rst still marks $VERSION as unreleased. Set the release date before tagging."
+            exit 1
+          fi
           extract_section "$VERSION" > release-notes.md
           if ! grep -q '[^[:space:]]' release-notes.md && [ "${{ steps.meta.outputs.prerelease }}" = "true" ]; then
             # The changelog only carries final versions, so a pre-release reads
