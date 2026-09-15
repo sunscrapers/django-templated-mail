@@ -47,6 +47,7 @@ test = [
     "coverage>=7.2.2",
     "pytest-cov>=4.0.0",
     "pytest-django>=4.5.2",
+    "pytest-mock>=3.14.0",
 ]
 code-quality = [
     "black>=23.1,<26.0",
