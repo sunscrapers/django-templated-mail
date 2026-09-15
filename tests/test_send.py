@@ -82,18 +82,16 @@ class TestDelivery:
 
         assert result == 1
 
-    def test_each_send_renders_fresh_content(self, mailoutbox, recipients):
+    def test_message_is_rendered_once(self, mailoutbox, recipients):
         email_message = BaseEmailMessage(
             template_name="context_mail.html", context={"payload": "first"}
         )
         email_message.send(to=recipients)
-        first_body = email_message.body
         email_message.context["payload"] = "second"
         email_message.send(to=recipients)
 
-        assert first_body.endswith("first")
-        assert email_message.body.endswith("second")
         assert len(mailoutbox) == 2
+        assert email_message.body.endswith("first")
 
     def test_render_then_send_sends_single_alternative(self, mailoutbox, recipients):
         email_message = BaseEmailMessage(template_name="text_and_html_mail.html")
@@ -199,7 +197,9 @@ class TestSerialization:
 
         assert email_message.request is None
 
-    def test_sent_message_can_be_deep_copied_and_pickled(self, recipients, http_request):
+    def test_sent_message_can_be_deep_copied_and_pickled(
+        self, recipients, http_request
+    ):
         # Stands in for the ResolverMatch a real request carries, which is
         # what made messages fail to copy in production (Django >= 5.1
         # deep copies every message handed to the locmem backend, and task

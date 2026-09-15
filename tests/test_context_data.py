@@ -148,7 +148,9 @@ class TestContextComposition:
 
     def test_instance_context_is_not_mutated(self):
         original = {"foo": "bar"}
-        email_message = BaseEmailMessage(template_name="text_mail.html", context=original)
+        email_message = BaseEmailMessage(
+            template_name="text_mail.html", context=original
+        )
 
         email_message.get_context_data()
 
@@ -164,7 +166,9 @@ class TestContextComposition:
         assert context["view"] is email_message
 
     def test_context_mixin(self):
-        email_message = MixinMail(template_name="text_mail.html", context={"foo": "bar"})
+        email_message = MixinMail(
+            template_name="text_mail.html", context={"foo": "bar"}
+        )
 
         context = email_message.get_context_data()
 

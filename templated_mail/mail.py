@@ -22,6 +22,7 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
         self.request = request
         self.context = {} if context is None else context
         self.html = None
+        self._is_rendered = False
 
         if template_name is not None:
             self.template_name = template_name
@@ -61,6 +62,8 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
         return context
 
     def render(self):
+        if self._is_rendered:
+            return
         if self.template_name is None:
             raise ImproperlyConfigured(
                 f"{type(self).__name__} requires either a definition of "
@@ -73,6 +76,7 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
             for block_node in blocks.values():
                 self._process_block(block_node, context)
         self._attach_body()
+        self._is_rendered = True
 
     def send(self, to, *args, **kwargs):
         self.render()
@@ -108,11 +112,6 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
 
     def _attach_body(self):
         if self.body and self.html:
-            # render() may run more than once (render() then send()); replace
-            # the HTML alternative instead of stacking another copy.
-            self.alternatives = [
-                alt for alt in self.alternatives if alt[1] != "text/html"
-            ]
             self.attach_alternative(self.html, "text/html")
         elif self.html:
             self.body = self.html

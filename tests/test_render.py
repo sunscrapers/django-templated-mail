@@ -70,12 +70,25 @@ class TestBlocks:
         assert email_message.subject == "Padded subject"
         assert email_message.body == "Padded body"
 
-    def test_rendering_twice_does_not_duplicate_alternatives(self):
+    def test_render_is_idempotent(self, mocker):
         email_message = rendered(template_name="text_and_html_mail.html")
+        get_template = mocker.patch("templated_mail.mail.get_template")
 
         email_message.render()
 
+        get_template.assert_not_called()
         assert len(email_message.alternatives) == 1
+
+    def test_user_attached_alternatives_survive_render(self):
+        email_message = BaseEmailMessage(template_name="text_and_html_mail.html")
+        email_message.attach_alternative("BEGIN:VCALENDAR", "text/calendar")
+
+        email_message.render()
+
+        assert [tuple(alt) for alt in email_message.alternatives] == [
+            ("BEGIN:VCALENDAR", "text/calendar"),
+            ("<p>Foobar email content</p>", "text/html"),
+        ]
 
     def test_render_does_not_send(self, mailoutbox):
         rendered(template_name="text_mail.html")
@@ -139,7 +152,9 @@ class TestContextInTemplates:
         assert email_message.body.endswith("gęślą jaźń ✉")
 
     def test_request_context_processors_run(self, http_request):
-        email_message = rendered(request=http_request, template_name="request_mail.html")
+        email_message = rendered(
+            request=http_request, template_name="request_mail.html"
+        )
 
         assert email_message.body == "path=/"
 

@@ -27,8 +27,9 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
   a Django-version-dependent ``TypeError`` or ``TemplateDoesNotExist``
 * fix ``BaseEmailMessage.send`` discarding Django's return value; it now returns the
   number of messages sent, like ``EmailMessage.send``
-* fix rendering a message more than once (for example ``render()`` followed by
-  ``send()``) attaching a duplicate ``text/html`` alternative
+* ``BaseEmailMessage.render`` is now idempotent: a message is rendered once and
+  ``send()`` reuses it. Previously ``render()`` followed by ``send()`` (or two
+  sends) attached a duplicate ``text/html`` alternative
 * rewrite the test suite in plain pytest style and extend it to cover settings
   precedence, template inheritance, context rendering, header handling,
   ``fail_silently`` forwarding and message serialization
