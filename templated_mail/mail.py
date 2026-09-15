@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
+from django.core.exceptions import ImproperlyConfigured
 from django.core import mail
 from django.template.context import make_context
 from django.template.loader import get_template
@@ -60,6 +61,11 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
         return context
 
     def render(self):
+        if self.template_name is None:
+            raise ImproperlyConfigured(
+                f"{type(self).__name__} requires either a definition of "
+                "'template_name' or a 'template_name' argument."
+            )
         context = make_context(self.get_context_data(), request=self.request)
         template = get_template(self.template_name)
         with context.bind_template(template.template):
@@ -82,7 +88,7 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
         # (5.1+) and task queues rely on.
         self.request = None
 
-        super().send(*args, **kwargs)
+        return super().send(*args, **kwargs)
 
     def _process_block(self, block_node, context):
         attr = self._node_map.get(block_node.name)
@@ -102,6 +108,11 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
 
     def _attach_body(self):
         if self.body and self.html:
+            # render() may run more than once (render() then send()); replace
+            # the HTML alternative instead of stacking another copy.
+            self.alternatives = [
+                alt for alt in self.alternatives if alt[1] != "text/html"
+            ]
             self.attach_alternative(self.html, "text/html")
         elif self.html:
             self.body = self.html

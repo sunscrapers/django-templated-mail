@@ -23,7 +23,15 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 * add GitHub Actions workflows for tests (Python x Django matrix), code quality
   (pre-commit with black, ruff, pyupgrade, docformatter) and tag-driven PyPI
   releases, mirroring djoser
-* fix the nested template inheritance test that was never collected
+* raise ``ImproperlyConfigured`` when a message has no ``template_name`` instead of
+  a Django-version-dependent ``TypeError`` or ``TemplateDoesNotExist``
+* fix ``BaseEmailMessage.send`` discarding Django's return value; it now returns the
+  number of messages sent, like ``EmailMessage.send``
+* fix rendering a message more than once (for example ``render()`` followed by
+  ``send()``) attaching a duplicate ``text/html`` alternative
+* rewrite the test suite in plain pytest style and extend it to cover settings
+  precedence, template inheritance, context rendering, header handling,
+  ``fail_silently`` forwarding and message serialization
 
 ---------------------
 `1.1.1`_ (2018-02-01)
