@@ -4,7 +4,12 @@ from django.core.exceptions import ImproperlyConfigured
 from django.core import mail
 from django.template.context import make_context
 from django.template.loader import get_template
-from django.template.loader_tags import BlockNode, ExtendsNode
+from django.template.loader_tags import (
+    BLOCK_CONTEXT_KEY,
+    BlockContext,
+    BlockNode,
+    ExtendsNode,
+)
 from django.views.generic.base import ContextMixin
 
 
@@ -72,9 +77,16 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
         context = make_context(self.get_context_data(), request=self.request)
         template = get_template(self.template_name)
         with context.bind_template(template.template):
-            blocks = self._get_blocks(template.template.nodelist, context)
-            for block_node in blocks.values():
-                self._process_block(block_node, context)
+            # Mirror what ExtendsNode.render does: collect every level's
+            # blocks into a BlockContext so overrides and {{ block.super }}
+            # resolve the same way they do in a full template render.
+            block_context = BlockContext()
+            self._collect_blocks(template.template, context, block_context)
+            context.render_context[BLOCK_CONTEXT_KEY] = block_context
+            for block_name, attr in self._node_map.items():
+                block_node = block_context.get_block(block_name)
+                if block_node is not None:
+                    setattr(self, attr, block_node.render(context).strip())
         self._attach_body()
         self._is_rendered = True
 
@@ -94,21 +106,16 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
 
         return super().send(*args, **kwargs)
 
-    def _process_block(self, block_node, context):
-        attr = self._node_map.get(block_node.name)
-        if attr is not None:
-            setattr(self, attr, block_node.render(context).strip())
-
-    def _get_blocks(self, nodelist, context):
-        blocks = {}
+    def _collect_blocks(self, template, context, block_context):
+        nodelist = template.nodelist
         for node in nodelist:
             if isinstance(node, ExtendsNode):
-                parent = node.get_parent(context)
-                blocks.update(self._get_blocks(parent.nodelist, context))
-        blocks.update(
+                block_context.add_blocks(node.blocks)
+                self._collect_blocks(node.get_parent(context), context, block_context)
+                return
+        block_context.add_blocks(
             {node.name: node for node in nodelist.get_nodes_by_type(BlockNode)}
         )
-        return blocks
 
     def _attach_body(self):
         if self.body and self.html:

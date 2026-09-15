@@ -111,6 +111,19 @@ class TestInheritance:
         assert email_message.body == "Some extended text body"
         assert email_message.html == "Some extended HTML body"
 
+    def test_block_super_renders_parent_block(self):
+        email_message = rendered(template_name="block_super.html")
+
+        assert email_message.subject == "Re: Text and HTML mail subject"
+        assert email_message.body == "Foobar email content (extended)"
+        assert email_message.html == "<p>Foobar email content</p>"
+
+    def test_block_super_chains_through_levels(self):
+        email_message = rendered(template_name="nested_block_super.html")
+
+        assert email_message.subject == "Re: Text and HTML mail subject"
+        assert email_message.body == "Foobar email content (extended) (again)"
+
     def test_three_levels_deep(self):
         email_message = rendered(template_name="deep_extends.html")
 
