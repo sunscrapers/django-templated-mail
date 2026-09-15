@@ -9,15 +9,14 @@ from django.views.generic.base import ContextMixin
 
 class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
     _node_map = {
-        'subject': 'subject',
-        'text_body': 'body',
-        'html_body': 'html',
+        "subject": "subject",
+        "text_body": "body",
+        "html_body": "html",
     }
     template_name = None
 
-    def __init__(self, request=None, context=None, template_name=None,
-                 *args, **kwargs):
-        super(BaseEmailMessage, self).__init__(*args, **kwargs)
+    def __init__(self, request=None, context=None, template_name=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.request = request
         self.context = {} if context is None else context
@@ -27,34 +26,37 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
             self.template_name = template_name
 
     def get_context_data(self, **kwargs):
-        ctx = super(BaseEmailMessage, self).get_context_data(**kwargs)
+        ctx = super().get_context_data(**kwargs)
         context = dict(ctx, **self.context)
         if self.request:
             site = get_current_site(self.request)
-            domain = context.get('domain') or (
-                getattr(settings, 'DOMAIN', '') or site.domain
+            domain = context.get("domain") or (
+                getattr(settings, "DOMAIN", "") or site.domain
             )
-            protocol = context.get('protocol') or (
-                'https' if self.request.is_secure() else 'http'
+            protocol = context.get("protocol") or (
+                getattr(settings, "PROTOCOL", "")
+                or ("https" if self.request.is_secure() else "http")
             )
-            site_name = context.get('site_name') or (
-                getattr(settings, 'SITE_NAME', '') or site.name
+            site_name = context.get("site_name") or (
+                getattr(settings, "SITE_NAME", "") or site.name
             )
-            user = context.get('user') or self.request.user
+            user = context.get("user") or self.request.user
         else:
-            domain = context.get('domain') or getattr(settings, 'DOMAIN', '')
-            protocol = context.get('protocol') or 'http'
-            site_name = context.get('site_name') or getattr(
-                settings, 'SITE_NAME', ''
+            domain = context.get("domain") or getattr(settings, "DOMAIN", "")
+            protocol = context.get("protocol") or (
+                getattr(settings, "PROTOCOL", "") or "http"
             )
-            user = context.get('user')
+            site_name = context.get("site_name") or getattr(settings, "SITE_NAME", "")
+            user = context.get("user")
 
-        context.update({
-            'domain': domain,
-            'protocol': protocol,
-            'site_name': site_name,
-            'user': user
-        })
+        context.update(
+            {
+                "domain": domain,
+                "protocol": protocol,
+                "site_name": site_name,
+                "user": user,
+            }
+        )
         return context
 
     def render(self):
@@ -70,14 +72,17 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
         self.render()
 
         self.to = to
-        self.cc = kwargs.pop('cc', [])
-        self.bcc = kwargs.pop('bcc', [])
-        self.reply_to = kwargs.pop('reply_to', [])
-        self.from_email = kwargs.pop(
-            'from_email', settings.DEFAULT_FROM_EMAIL
-        )
+        self.cc = kwargs.pop("cc", [])
+        self.bcc = kwargs.pop("bcc", [])
+        self.reply_to = kwargs.pop("reply_to", [])
+        self.from_email = kwargs.pop("from_email", settings.DEFAULT_FROM_EMAIL)
 
-        super(BaseEmailMessage, self).send(*args, **kwargs)
+        # The request is only needed for rendering. Dropping it keeps the
+        # message deep-copyable and picklable, which Django's locmem backend
+        # (5.1+) and task queues rely on.
+        self.request = None
+
+        super().send(*args, **kwargs)
 
     def _process_block(self, block_node, context):
         attr = self._node_map.get(block_node.name)
@@ -90,14 +95,14 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
             if isinstance(node, ExtendsNode):
                 parent = node.get_parent(context)
                 blocks.update(self._get_blocks(parent.nodelist, context))
-        blocks.update({
-            node.name: node for node in nodelist.get_nodes_by_type(BlockNode)
-        })
+        blocks.update(
+            {node.name: node for node in nodelist.get_nodes_by_type(BlockNode)}
+        )
         return blocks
 
     def _attach_body(self):
         if self.body and self.html:
-            self.attach_alternative(self.html, 'text/html')
+            self.attach_alternative(self.html, "text/html")
         elif self.html:
             self.body = self.html
-            self.content_subtype = 'html'
+            self.content_subtype = "html"
