@@ -37,3 +37,13 @@ ENV/
 
 # logs
 *.log
+# Coverage / pytest
+coverage.xml
+.pytest_cache/
+.ruff_cache/
+
+# Sphinx
+docs/build/
+
+# Packaging
+*.egg-info/

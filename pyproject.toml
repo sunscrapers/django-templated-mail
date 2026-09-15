@@ -1,0 +1,151 @@
+[project]
+name = "django-templated-mail"
+version = "2.0.0"
+description = "Send emails using Django template system."
+authors = [
+    {name = "Sunscrapers", email = "info@sunscrapers.com"},
+]
+maintainers = [
+    {name = "Tomasz Wojcik", email = "djoser@tomwojcik.com"},
+]
+license = {text = "MIT"}
+readme = "README.rst"
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Django",
+    "Framework :: Django :: 3.2",
+    "Framework :: Django :: 4.0",
+    "Framework :: Django :: 4.1",
+    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.0",
+    "Framework :: Django :: 5.1",
+    "Framework :: Django :: 5.2",
+    "Framework :: Django :: 6.0",
+    "Framework :: Django :: 6.1",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "django>=3.2",
+]
+
+# Dev dependencies live in PEP 735 groups so they are not published as
+# extras in the wheel metadata; install with `uv sync --group <name>`.
+[dependency-groups]
+test = [
+    "pytest>=7.2.2",
+    "coverage>=7.2.2",
+    "pytest-cov>=4.0.0",
+    "pytest-django>=4.5.2",
+]
+code-quality = [
+    "black>=23.1,<26.0",
+    "ruff>=0.8.0",
+    "docformatter>=1.7.4",
+    "pyupgrade>=3.3.1",
+    "pre-commit-hooks>=4.4,<6.0",
+    "pre-commit>=4.1.0",
+]
+docs = [
+    "sphinx>=6.1.3",
+    "sphinx-rtd-theme>=1.2.0",
+    "toml>=0.10.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/sunscrapers/django-templated-mail"
+Repository = "https://github.com/sunscrapers/django-templated-mail"
+Documentation = "https://django-templated-mail.readthedocs.io/"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+include = ["/templated_mail"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["templated_mail"]
+
+[tool.black]
+line-length = 88
+target-version = ["py39", "py310", "py311", "py312", "py313"]
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      \.cache
+    | \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.pytest_cache
+    | \.tox
+    | \.venv
+    | __pycache__
+    | _build
+    | buck-out
+    | build
+    | dist
+    | docs
+    | migrations
+  )/
+)
+'''
+
+[tool.ruff]
+exclude = [
+    "conf.py",
+    ".venv",
+    ".git",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".tox",
+    "_build",
+    "build",
+    "dist",
+    "venv",
+    "migrations",
+]
+line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F"]
+fixable = ["A", "B", "C", "D", "E", "F"]
+unfixable = []
+
+[tool.docformatter]
+recursive = true
+pre-summary-newline = true
+make-summary-multi-line = true
+wrap-summaries = 88
+wrap-descriptions = 88
+in-place = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+DJANGO_SETTINGS_MODULE = "tests.settings"
+pythonpath = ["."]
+addopts = "--tb=short --strict-markers"
+
+[tool.coverage.run]
+source = ["templated_mail"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
