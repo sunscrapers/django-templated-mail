@@ -4,9 +4,7 @@ version = "2.0.0"
 description = "Send emails using Django template system."
 authors = [
     {name = "Sunscrapers", email = "info@sunscrapers.com"},
-]
-maintainers = [
-    {name = "Tomasz Wojcik", email = "djoser@tomwojcik.com"},
+    {name = "Tomasz Wojcik", email = "django-templated-email@tomwojcik.com"},
 ]
 license = {text = "MIT"}
 readme = "README.rst"
