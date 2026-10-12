@@ -4,17 +4,25 @@ Getting started
 Supported Python versions
 -------------------------
 
-* Python 2.7
-* Python 3.4
-* Python 3.5
-* Python 3.6
+* Python 3.9
+* Python 3.10
+* Python 3.11
+* Python 3.12
+* Python 3.13
+* Python 3.14
 
 Supported Django versions
 -------------------------
 
-* Django 1.8
-* Django 1.11
-* Django 2.0
+* Django 3.2
+* Django 4.0
+* Django 4.1
+* Django 4.2
+* Django 5.0
+* Django 5.1
+* Django 5.2
+* Django 6.0
+* Django 6.1
 
 Installation
 ------------

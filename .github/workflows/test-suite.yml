@@ -1,0 +1,277 @@
+name: Tests
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_call:
+
+# `uv run` would otherwise re-sync the environment to uv.lock and undo the
+# matrix-specific Django pins installed with `uv pip install`.
+env:
+  UV_NO_SYNC: "1"
+
+jobs:
+  django3-test:
+    name: Django 3 - Python ${{ matrix.python-version }} - Django ${{ matrix.django-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+        django-version: ["3.2.25"]
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --group test
+
+      - name: Install Django version
+        run: |
+          if [ "${{ matrix.django-version }}" = "latest" ]; then
+            uv pip install --upgrade "Django"  # Force upgrade to latest
+          else
+            # First try exact version, if it fails try to install the major.minor version
+            echo "Installing Django ${{ matrix.django-version }}..."
+            if ! uv pip install "Django==${{ matrix.django-version }}"; then
+              echo "Exact version failed, trying to install the latest patch version..."
+              MAJOR_MINOR=$(echo "${{ matrix.django-version }}" | cut -d. -f1,2)
+              uv pip install "Django~=$MAJOR_MINOR.0"
+            fi
+          fi
+
+      - name: Show environment info
+        run: |
+          uv run python --version
+          # -i because uv pip freeze normalizes names to lowercase (django==),
+          # unlike pip which preserved the canonical Django== casing
+          uv pip freeze | grep -iE '^django=='
+
+      - name: Run tests
+        run: make test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        continue-on-error: true
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  django4-test:
+    name: Django 4 - Python ${{ matrix.python-version }} - Django ${{ matrix.django-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+        django-version: ["4.0", "4.1", "4.2"]
+        include:
+          # Django 4.2 gained Python 3.12 support in 4.2.8
+          - python-version: "3.12"
+            django-version: "4.2"
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --group test
+
+      - name: Install Django version
+        run: |
+          if [ "${{ matrix.django-version }}" = "latest" ]; then
+            uv pip install --upgrade "Django"  # Force upgrade to latest
+          else
+            # First try exact version, if it fails try to install the major.minor version
+            echo "Installing Django ${{ matrix.django-version }}..."
+            if ! uv pip install "Django==${{ matrix.django-version }}"; then
+              echo "Exact version failed, trying to install the latest patch version..."
+              MAJOR_MINOR=$(echo "${{ matrix.django-version }}" | cut -d. -f1,2)
+              uv pip install "Django~=$MAJOR_MINOR.0"
+            fi
+          fi
+
+      - name: Show environment info
+        run: |
+          uv run python --version
+          # -i because uv pip freeze normalizes names to lowercase (django==),
+          # unlike pip which preserved the canonical Django== casing
+          uv pip freeze | grep -iE '^django=='
+
+      - name: Run tests
+        run: make test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        continue-on-error: true
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  django5-test:
+    name: Django 5 - Python ${{ matrix.python-version }} - Django ${{ matrix.django-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        django-version: ["5.0.14", "5.1.15", "5.2.17"]
+        exclude:
+          # Django 5.0 never supported Python 3.13 (support arrived in 5.1.3)
+          - python-version: '3.13'
+            django-version: "5.0.14"
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --group test
+
+      - name: Install Django version
+        run: |
+          if [ "${{ matrix.django-version }}" = "latest" ]; then
+            uv pip install --upgrade "Django"  # Force upgrade to latest
+          else
+            # First try exact version, if it fails try to install the major.minor version
+            echo "Installing Django ${{ matrix.django-version }}..."
+            if ! uv pip install "Django==${{ matrix.django-version }}"; then
+              echo "Exact version failed, trying to install the latest patch version..."
+              MAJOR_MINOR=$(echo "${{ matrix.django-version }}" | cut -d. -f1,2)
+              uv pip install "Django~=$MAJOR_MINOR.0"
+            fi
+          fi
+
+      - name: Show environment info
+        run: |
+          uv run python --version
+          # -i because uv pip freeze normalizes names to lowercase (django==),
+          # unlike pip which preserved the canonical Django== casing
+          uv pip freeze | grep -iE '^django=='
+
+      - name: Run tests
+        run: make test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        continue-on-error: true
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  django6-test:
+    name: Django 6 - Python ${{ matrix.python-version }} - Django ${{ matrix.django-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
+        django-version: ["6.0.8", "6.1.1"]
+        include:
+          # Latest Django stable requires Python >= 3.12
+          - python-version: "3.12"
+            django-version: "latest"
+          - python-version: "3.13"
+            django-version: "latest"
+          - python-version: "3.14"
+            django-version: "latest"
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --group test
+
+      - name: Install Django version
+        run: |
+          if [ "${{ matrix.django-version }}" = "latest" ]; then
+            uv pip install --upgrade "Django"  # Force upgrade to latest
+          else
+            # First try exact version, if it fails try to install the major.minor version
+            echo "Installing Django ${{ matrix.django-version }}..."
+            if ! uv pip install "Django==${{ matrix.django-version }}"; then
+              echo "Exact version failed, trying to install the latest patch version..."
+              MAJOR_MINOR=$(echo "${{ matrix.django-version }}" | cut -d. -f1,2)
+              uv pip install "Django~=$MAJOR_MINOR.0"
+            fi
+          fi
+
+      - name: Show environment info
+        run: |
+          uv run python --version
+          # -i because uv pip freeze normalizes names to lowercase (django==),
+          # unlike pip which preserved the canonical Django== casing
+          uv pip freeze | grep -iE '^django=='
+
+      - name: Run tests
+        run: make test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        continue-on-error: true
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  lock-file-check:
+    name: Check uv.lock for changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      # No `uv sync` first: a plain sync re-locks and rewrites a stale
+      # uv.lock on disk, which would make this check unfailable.
+      - name: Check if uv.lock is up to date
+        run: uv lock --check

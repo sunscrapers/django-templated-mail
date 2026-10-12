@@ -1,0 +1,4 @@
+{% extends "text_and_html_mail.html" %}
+
+{% block subject %}Re: {{ block.super }}{% endblock %}
+{% block text_body %}{{ block.super }} (extended){% endblock %}

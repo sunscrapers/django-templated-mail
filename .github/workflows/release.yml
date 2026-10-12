@@ -1,0 +1,186 @@
+name: Release
+
+# Historical django-templated-mail tags are bare X.Y.Z (no v prefix), so
+# trigger on every tag and let the validate job reject anything that is not a
+# release tag.
+on:
+  push:
+    tags:
+      - '**'
+
+jobs:
+  validate:
+    name: Validate tag, version and release notes
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      prerelease: ${{ steps.meta.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Parse release tag
+        id: meta
+        run: |
+          VERSION="$GITHUB_REF_NAME"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+((a|b|rc)[0-9]+)?$ ]]; then
+            echo "Tag $GITHUB_REF_NAME is not a release tag (expected X.Y.Z or X.Y.Z{a|b|rc}N)"
+            exit 1
+          fi
+          if [[ "$VERSION" =~ (a|b|rc)[0-9]+$ ]]; then
+            PRERELEASE=true
+          else
+            PRERELEASE=false
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Verify package version matches tag
+        run: |
+          PACKAGE_VERSION=$(uv version --short)
+          if [ "$PACKAGE_VERSION" != "${{ steps.meta.outputs.version }}" ]; then
+            echo "pyproject.toml version ($PACKAGE_VERSION) does not match tag version (${{ steps.meta.outputs.version }})"
+            exit 1
+          fi
+
+      - name: Verify tag commit is on master
+        if: steps.meta.outputs.prerelease == 'false'
+        run: |
+          if ! git merge-base --is-ancestor HEAD origin/master; then
+            echo "Stable release tags must point at a commit that is on master"
+            exit 1
+          fi
+
+      - name: Extract release notes from CHANGELOG.rst
+        run: |
+          VERSION="${{ steps.meta.outputs.version }}"
+          extract_section() {
+            awk -v ver="$1" '
+              index($0, "`" ver "`_") == 1 { found=1; getline; next }
+              found && /^-+$/ { exit }
+              found { print }
+            ' CHANGELOG.rst
+          }
+          if grep -q "^\`$VERSION\`_ (unreleased)" CHANGELOG.rst; then
+            echo "CHANGELOG.rst still marks $VERSION as unreleased. Set the release date before tagging."
+            exit 1
+          fi
+          extract_section "$VERSION" > release-notes.md
+          if ! grep -q '[^[:space:]]' release-notes.md && [ "${{ steps.meta.outputs.prerelease }}" = "true" ]; then
+            # The changelog only carries final versions, so a pre-release reads
+            # the section of the version it is a candidate for.
+            BASE=$(printf '%s' "$VERSION" | sed -E 's/(a|b|rc)[0-9]+$//')
+            { echo "Pre-release of $BASE."; echo; extract_section "$BASE"; } > release-notes.md
+          fi
+          if ! grep -q '[^[:space:]]' release-notes.md; then
+            echo "No CHANGELOG.rst entry found for $VERSION. Add release notes before tagging."
+            exit 1
+          fi
+          echo "Release notes:"
+          cat release-notes.md
+
+      - name: Upload release notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: release-notes.md
+
+  tests:
+    name: Test suite
+    needs: validate
+    uses: ./.github/workflows/test-suite.yml
+    secrets: inherit
+
+  build:
+    name: Build distribution
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Build package
+        run: |
+          uv build
+          ls -l dist/
+
+      - name: Upload distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  # Every version publishes to PyPI, pre-releases included: pip and uv never
+  # resolve a pre-release unless asked with --pre or an exact pin, so an
+  # aN/bN/rcN upload is invisible to ordinary installs while still exercising
+  # the real publish path. Test PyPI is deliberately not used.
+  publish-pypi:
+    name: Publish to PyPI
+    needs: [validate, tests, build]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/django-templated-mail/
+    steps:
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Download distribution
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Publish
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          if [ -z "$UV_PUBLISH_TOKEN" ]; then
+            echo "The PYPI_TOKEN secret is not set on this repository."
+            exit 1
+          fi
+          uv publish dist/*
+
+  github-release:
+    name: Create GitHub release
+    needs: [validate, publish-pypi]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download distribution
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Download release notes
+        uses: actions/download-artifact@v4
+        with:
+          name: release-notes
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          EXTRA_ARGS=""
+          if [ "${{ needs.validate.outputs.prerelease }}" = "true" ]; then
+            EXTRA_ARGS="--prerelease"
+          fi
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file release-notes.md \
+            $EXTRA_ARGS
