@@ -57,6 +57,11 @@ class TestDelivery:
             "text/html",
         ]
 
+    def test_subject_block_over_several_lines(self, mailoutbox, recipients):
+        send(recipients, template_name="block_super_padded.html")
+
+        assert mailoutbox[0].subject == "Re: Padded subject"
+
     def test_without_request(self, mailoutbox, recipients):
         send(recipients)
 

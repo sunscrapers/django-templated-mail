@@ -15,8 +15,13 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
   templates have been rendered, so a sent message can be deep-copied and pickled
   (required by the locmem email backend since Django 5.1 and by task queues)
   https://github.com/sunscrapers/djoser/issues/842
-* ``{{ block.super }}`` now works in email templates that extend a base template;
-  previously it raised ``TemplateSyntaxError``
+* email templates that extend a base template now render the blocks they inherit,
+  and ``{{ block.super }}`` works in them; 1.1.1 sent such templates with an empty
+  subject and body https://github.com/sunscrapers/django-templated-mail/issues/10
+* a ``subject`` block that renders to several lines, e.g. one written over several
+  lines or one that pulls in a padded parent block with ``{{ block.super }}``, is
+  joined into a single line, since email headers cannot contain line breaks;
+  previously sending it raised an error
 * add optional ``PROTOCOL`` setting, overriding the protocol derived from the
   request in the same way ``DOMAIN`` and ``SITE_NAME`` do
   https://github.com/sunscrapers/django-templated-mail/issues/31

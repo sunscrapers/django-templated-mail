@@ -86,7 +86,15 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
             for block_name, attr in self._node_map.items():
                 block_node = block_context.get_block(block_name)
                 if block_node is not None:
-                    setattr(self, attr, block_node.render(context).strip())
+                    value = block_node.render(context).strip()
+                    if attr == "subject":
+                        # Header values cannot contain line breaks, and a subject
+                        # block spans several lines once it is written over them or
+                        # pulls in a padded parent with {{ block.super }}.
+                        value = " ".join(
+                            line.strip() for line in value.splitlines() if line.strip()
+                        )
+                    setattr(self, attr, value)
         self._attach_body()
         self._is_rendered = True
 

@@ -3,7 +3,8 @@ Templates syntax
 
 Email templates can be built using three simple blocks:
 
-- ``subject`` - used for subject of an email message
+- ``subject`` - used for subject of an email message; if it renders to several
+  lines they are joined with spaces, since email headers cannot contain line breaks
 - ``text_body`` - used for plaintext body of an email message (not required)
 - ``html_body`` - used for html body of an email message (not required)
 

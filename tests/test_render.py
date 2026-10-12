@@ -70,6 +70,17 @@ class TestBlocks:
         assert email_message.subject == "Padded subject"
         assert email_message.body == "Padded body"
 
+    def test_subject_lines_are_joined(self):
+        # Header values cannot contain line breaks.
+        email_message = rendered(template_name="multiline_subject.html")
+
+        assert email_message.subject == "Subject written over two lines"
+
+    def test_block_super_of_padded_subject_is_one_line(self):
+        email_message = rendered(template_name="block_super_padded.html")
+
+        assert email_message.subject == "Re: Padded subject"
+
     def test_render_is_idempotent(self, mocker):
         email_message = rendered(template_name="text_and_html_mail.html")
         get_template = mocker.patch("templated_mail.mail.get_template")
