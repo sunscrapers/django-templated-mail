@@ -8,6 +8,9 @@ on:
     - cron: '0 0 * * 0'
   workflow_call:
 
+permissions:
+  contents: read
+
 # `uv run` would otherwise re-sync the environment to uv.lock and undo the
 # matrix-specific Django pins installed with `uv pip install`.
 env:
@@ -77,11 +80,12 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
-        django-version: ["4.0", "4.1", "4.2"]
+        # Full versions: "Django==4.2" installs exactly 4.2.0, not the latest patch.
+        django-version: ["4.0.10", "4.1.13", "4.2.30"]
         include:
           # Django 4.2 gained Python 3.12 support in 4.2.8
           - python-version: "3.12"
-            django-version: "4.2"
+            django-version: "4.2.30"
 
     runs-on: ubuntu-latest
     steps:

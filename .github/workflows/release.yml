@@ -8,6 +8,10 @@ on:
     tags:
       - '**'
 
+# Jobs that need more (github-release) ask for it themselves.
+permissions:
+  contents: read
+
 jobs:
   validate:
     name: Validate tag, version and release notes

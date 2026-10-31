@@ -75,13 +75,19 @@ class BaseEmailMessage(mail.EmailMultiAlternatives, ContextMixin):
                 "'template_name' or a 'template_name' argument."
             )
         context = make_context(self.get_context_data(), request=self.request)
-        template = get_template(self.template_name)
-        with context.bind_template(template.template):
+        template = get_template(self.template_name).template
+        # Mirror Template.render: with the template pushed onto the render
+        # context, template debug can report an error raised inside a block
+        # instead of masking it with an AttributeError.
+        with (
+            context.render_context.push_state(template),
+            context.bind_template(template),
+        ):
             # Mirror what ExtendsNode.render does: collect every level's
             # blocks into a BlockContext so overrides and {{ block.super }}
             # resolve the same way they do in a full template render.
             block_context = BlockContext()
-            self._collect_blocks(template.template, context, block_context)
+            self._collect_blocks(template, context, block_context)
             context.render_context[BLOCK_CONTEXT_KEY] = block_context
             for block_name, attr in self._node_map.items():
                 block_node = block_context.get_block(block_name)

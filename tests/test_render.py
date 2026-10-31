@@ -135,6 +135,12 @@ class TestInheritance:
         assert email_message.subject == "Re: Text and HTML mail subject"
         assert email_message.body == "Foobar email content (extended) (again)"
 
+    def test_child_overrides_block_nested_in_html_body(self):
+        email_message = rendered(template_name="nested_block_override.html")
+
+        assert email_message.subject == "Layout subject"
+        assert email_message.html == "<html>Child content</html>"
+
     def test_three_levels_deep(self):
         email_message = rendered(template_name="deep_extends.html")
 
@@ -186,6 +192,28 @@ class TestContextInTemplates:
         email_message = rendered(template_name="request_mail.html")
 
         assert email_message.body == "path="
+
+
+class Exploding:
+    def __str__(self):
+        raise ValueError("kaboom")
+
+
+class TestTemplateErrors:
+    @pytest.fixture
+    def template_debug(self, settings):
+        engine = settings.TEMPLATES[0]
+        settings.TEMPLATES = [
+            {**engine, "OPTIONS": {**engine["OPTIONS"], "debug": True}}
+        ]
+
+    def test_error_in_block_surfaces_with_template_debug(self, template_debug):
+        with pytest.raises(ValueError, match="kaboom") as excinfo:
+            rendered(
+                template_name="context_mail.html", context={"payload": Exploding()}
+            )
+
+        assert excinfo.value.template_debug["name"].endswith("context_mail.html")
 
 
 class TestTemplateName:

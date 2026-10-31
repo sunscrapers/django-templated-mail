@@ -15,9 +15,23 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
   templates have been rendered, so a sent message can be deep-copied and pickled
   (required by the locmem email backend since Django 5.1 and by task queues)
   https://github.com/sunscrapers/djoser/issues/842
+* **breaking:** a message is rendered once, by the first ``render()`` or ``send()``,
+  and later sends reuse that result. Sending one instance several times with a
+  changed ``context`` or ``template_name`` now sends the first rendering every time,
+  where 1.1.1 rendered again on each send; build a new instance per email instead.
+  This also stops ``render()`` followed by ``send()`` (or two sends) from attaching
+  a duplicate ``text/html`` alternative
+* **breaking:** the private ``_process_node`` method is gone, so a subclass that
+  overrides it is no longer called; add entries to ``_node_map`` to read more blocks,
+  or override ``render()``
 * email templates that extend a base template now render the blocks they inherit,
-  and ``{{ block.super }}`` works in them; 1.1.1 sent such templates with an empty
-  subject and body https://github.com/sunscrapers/django-templated-mail/issues/10
+  apply overrides of blocks nested inside them, and support ``{{ block.super }}``;
+  1.1.1 sent such templates with an empty subject and body
+  https://github.com/sunscrapers/django-templated-mail/issues/10
+* with template debug enabled (the default when ``DEBUG = True``), an error raised
+  inside a block now propagates as itself, with the template location attached,
+  instead of being masked by
+  ``AttributeError: 'NoneType' object has no attribute 'origin'``
 * a ``subject`` block that renders to several lines, e.g. one written over several
   lines or one that pulls in a padded parent block with ``{{ block.super }}``, is
   joined into a single line, since email headers cannot contain line breaks;
@@ -34,9 +48,6 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
   a Django-version-dependent ``TypeError`` or ``TemplateDoesNotExist``
 * fix ``BaseEmailMessage.send`` discarding Django's return value; it now returns the
   number of messages sent, like ``EmailMessage.send``
-* ``BaseEmailMessage.render`` is now idempotent: a message is rendered once and
-  ``send()`` reuses it. Previously ``render()`` followed by ``send()`` (or two
-  sends) attached a duplicate ``text/html`` alternative
 * rewrite the test suite in plain pytest style and extend it to cover settings
   precedence, template inheritance, context rendering, header handling,
   ``fail_silently`` forwarding and message serialization

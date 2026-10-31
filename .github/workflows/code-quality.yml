@@ -5,6 +5,9 @@ on:
       - master
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   code-quality:
     runs-on: ubuntu-latest
@@ -26,8 +29,9 @@ jobs:
       - name: Run pre-commit with debug
         run: |
           echo "Running pre-commit hooks with verbose output..."
-          uv run pre-commit run --all-files --verbose
-          if [ $? -ne 0 ]; then
+          # Test the command directly: the step shell runs with `set -e`, so a
+          # separate `$?` check after a failing command is never reached.
+          if ! uv run pre-commit run --all-files --verbose; then
             echo "Pre-commit failed. Showing git status:"
             git status
             echo "Showing git diff:"
