@@ -1,0 +1,3 @@
+{% block subject %}Hello {{ user }} from {{ site_name }}{% endblock %}
+{% block text_body %}{{ protocol }}://{{ domain }}/ {{ payload }}{% endblock %}
+{% block html_body %}<a href="{{ protocol }}://{{ domain }}/">{{ payload }}</a>{% endblock %}

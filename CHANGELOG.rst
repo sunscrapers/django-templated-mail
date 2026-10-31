@@ -6,14 +6,61 @@ This document records all notable changes to django-templated-mail.
 This project adheres to `Semantic Versioning <http://semver.org/>`_.
 
 ---------------------
-`1.1.1`_ (2017-02-01)
+`2.0.0`_ (unreleased)
+---------------------
+
+* **breaking:** drop support for Python 2.7 and 3.4-3.7; Python 3.9-3.14 are supported
+* **breaking:** drop support for Django 1.11-3.1; Django 3.2-6.1 are supported
+* **breaking:** ``BaseEmailMessage.send`` clears ``request`` on the instance once the
+  templates have been rendered, so a sent message can be deep-copied and pickled
+  (required by the locmem email backend since Django 5.1 and by task queues)
+  https://github.com/sunscrapers/djoser/issues/842
+* **breaking:** a message is rendered once, by the first ``render()`` or ``send()``,
+  and later sends reuse that result. Sending one instance several times with a
+  changed ``context`` or ``template_name`` now sends the first rendering every time,
+  where 1.1.1 rendered again on each send; build a new instance per email instead.
+  This also stops ``render()`` followed by ``send()`` (or two sends) from attaching
+  a duplicate ``text/html`` alternative
+* **breaking:** the private ``_process_node`` method is gone, so a subclass that
+  overrides it is no longer called; add entries to ``_node_map`` to read more blocks,
+  or override ``render()``
+* email templates that extend a base template now render the blocks they inherit,
+  apply overrides of blocks nested inside them, and support ``{{ block.super }}``;
+  1.1.1 sent such templates with an empty subject and body
+  https://github.com/sunscrapers/django-templated-mail/issues/10
+* with template debug enabled (the default when ``DEBUG = True``), an error raised
+  inside a block now propagates as itself, with the template location attached,
+  instead of being masked by
+  ``AttributeError: 'NoneType' object has no attribute 'origin'``
+* a ``subject`` block that renders to several lines, e.g. one written over several
+  lines or one that pulls in a padded parent block with ``{{ block.super }}``, is
+  joined into a single line, since email headers cannot contain line breaks;
+  previously sending it raised an error
+* add optional ``PROTOCOL`` setting, overriding the protocol derived from the
+  request in the same way ``DOMAIN`` and ``SITE_NAME`` do
+  https://github.com/sunscrapers/django-templated-mail/issues/31
+* move packaging to ``pyproject.toml`` (hatchling) and ``uv``; drop ``setup.py``,
+  ``Pipfile``, ``tox`` and Travis CI
+* add GitHub Actions workflows for tests (Python x Django matrix), code quality
+  (pre-commit with black, ruff, pyupgrade, docformatter) and tag-driven PyPI
+  releases, mirroring djoser
+* raise ``ImproperlyConfigured`` when a message has no ``template_name`` instead of
+  a Django-version-dependent ``TypeError`` or ``TemplateDoesNotExist``
+* fix ``BaseEmailMessage.send`` discarding Django's return value; it now returns the
+  number of messages sent, like ``EmailMessage.send``
+* rewrite the test suite in plain pytest style and extend it to cover settings
+  precedence, template inheritance, context rendering, header handling,
+  ``fail_silently`` forwarding and message serialization
+
+---------------------
+`1.1.1`_ (2018-02-01)
 ---------------------
 
 * Bugfix: ``from_email`` does not fallback to ``DEFAULT_FROM_EMAIL``
 
 
 ---------------------
-`1.1.0`_ (2017-01-29)
+`1.1.0`_ (2018-01-29)
 ---------------------
 
 * Add support for ``reply_to`` parameter in ``BaseEmailMessage.send`` method
@@ -62,3 +109,5 @@ This project adheres to `Semantic Versioning <http://semver.org/>`_.
 .. _0.2.0: https://github.com/sunscrapers/django-templated-mail/compare/0.1.1...0.2.0
 .. _1.0.0: https://github.com/sunscrapers/django-templated-mail/compare/0.2.0...1.0.0
 .. _1.1.0: https://github.com/sunscrapers/django-templated-mail/compare/1.0.0...1.1.0
+.. _1.1.1: https://github.com/sunscrapers/django-templated-mail/compare/1.1.0...1.1.1
+.. _2.0.0: https://github.com/sunscrapers/django-templated-mail/compare/1.1.1...2.0.0

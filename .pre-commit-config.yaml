@@ -1,0 +1,45 @@
+fail_fast: false
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: debug-statements
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/ambv/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+        language_version: python3
+        entry: black
+        require_serial: true
+        types: [ python ]
+
+  - repo: local
+    hooks:
+      - id: docformatter
+        name: docformatter
+        entry: docformatter
+        language: system
+        types: [python]
+        args: [--in-place, --wrap-summaries=88, --wrap-descriptions=88, --make-summary-multi-line]
+
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: 'v0.9.4'
+    hooks:
+      - id: ruff
+        name: ruff
+        stages: [ pre-commit ]
+        types: [ file, python ]
+        args: ["--fix"]
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.19.1
+    hooks:
+      - id: pyupgrade
+        args: [ --py39-plus ]

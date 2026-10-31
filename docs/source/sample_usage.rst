@@ -24,7 +24,7 @@ which returns context used during template rendering.
 
     class MyEmailMessage(BaseEmailMessage):
         def get_context_data(self):
-            context = super(MyEmailMessage, self).get_context_data()
+            context = super().get_context_data()
             context['foo'] = 'bar'
             return context
 
@@ -43,3 +43,13 @@ and so to save some space you might wish to override the base class' attribute.
 
     class MyEmailMessage(BaseEmailMessage):
         template_name = 'email.html'
+
+Rendering happens once
+----------------------
+
+A message instance renders its templates the first time ``render()`` or
+``send()`` is called and keeps the result. Sending the same instance again
+reuses the rendered subject and bodies, so build a new instance when you need
+different context. Once ``send()`` has run, the ``request`` passed to the
+constructor is dropped from the instance so that the message can be pickled or
+deep-copied, for example by task queues or by Django's in-memory test backend.

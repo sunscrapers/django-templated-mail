@@ -1,0 +1,16 @@
+version: 2
+
+build:
+  os: ubuntu-24.04
+  tools:
+    python: "3.11"
+  jobs:
+    post_create_environment:
+      - python -m pip install uv
+    post_install:
+      # uv ignores VIRTUAL_ENV; UV_PROJECT_ENVIRONMENT is what points it at
+      # the Read the Docs virtualenv instead of a project-local .venv
+      - UV_PROJECT_ENVIRONMENT=$READTHEDOCS_VIRTUALENV_PATH uv sync --group docs
+
+sphinx:
+  configuration: docs/source/conf.py
